@@ -33,8 +33,7 @@ import java.util.List;
  */
 public class ChatClient extends Application {
 
-    // ── Network state ──────────────────────────────────────────────────────────
-
+    // Network state
     private Socket             socket;
     private ObjectOutputStream out;
     private ObjectInputStream  in;
@@ -42,20 +41,17 @@ public class ChatClient extends Application {
     private String             username;
     private String             currentRoom;
 
-    // ── JavaFX stage reference ─────────────────────────────────────────────────
-
+    // JavaFX stage reference
     private Stage primaryStage;
 
-    // ── Login scene controls ───────────────────────────────────────────────────
-
+    // Login scene controls
     private TextField usernameField;
     private TextField hostField;
     private TextField portField;
     private Button    connectButton;
     private Label     loginStatus;
 
-    // ── Chat scene controls ────────────────────────────────────────────────────
-
+    //Chat scene controls
     private TextArea         chatArea;
     private TextField        messageField;
     private ListView<String> roomsListView;
@@ -64,7 +60,7 @@ public class ChatClient extends Application {
     private Label            userInfoLabel;
     private TextField        newRoomField;
 
-    // ── Application lifecycle ──────────────────────────────────────────────────
+    //Application lifecycle
 
     @Override
     public void start(Stage stage) {
@@ -79,10 +75,7 @@ public class ChatClient extends Application {
         });
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // LOGIN SCENE
-    // ══════════════════════════════════════════════════════════════════════════
-
+    // Login Part
     private void showLoginScene() {
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(40));
@@ -135,10 +128,7 @@ public class ChatClient extends Application {
         primaryStage.setResizable(false);
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // CONNECTION LOGIC
-    // ══════════════════════════════════════════════════════════════════════════
-
+    // Connection Part
     private void attemptConnect() {
         String user = usernameField.getText().trim();
         String host = hostField.getText().trim();
@@ -198,17 +188,14 @@ public class ChatClient extends Application {
         }, "Connect-Thread").start();
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // CHAT SCENE
-    // ══════════════════════════════════════════════════════════════════════════
-
+    // Chat Part
     private void showChatScene() {
         primaryStage.setTitle("Chat — " + username);
         primaryStage.setResizable(true);
 
         BorderPane root = new BorderPane();
 
-        // ── Top bar ────────────────────────────────────────────────────────────
+        // Top bar
         HBox topBar = new HBox(14);
         topBar.setPadding(new Insets(10, 14, 10, 14));
         topBar.setAlignment(Pos.CENTER_LEFT);
@@ -233,7 +220,7 @@ public class ChatClient extends Application {
         topBar.getChildren().addAll(userInfoLabel, currentRoomLabel, spacer, disconnectBtn);
         root.setTop(topBar);
 
-        // ── Left panel: rooms ──────────────────────────────────────────────────
+        // ── Left panel: rooms
         VBox leftPanel = new VBox(8);
         leftPanel.setPadding(new Insets(10));
         leftPanel.setPrefWidth(210);
@@ -306,10 +293,7 @@ public class ChatClient extends Application {
         primaryStage.setScene(scene);
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
     // RECEIVE THREAD (push-based, no polling)
-    // ══════════════════════════════════════════════════════════════════════════
-
     private void startReceiving() {
         Thread receiveThread = new Thread(() -> {
             while (connected) {
@@ -337,10 +321,7 @@ public class ChatClient extends Application {
         receiveThread.start();
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // INCOMING MESSAGE HANDLER (always called on JavaFX thread)
-    // ══════════════════════════════════════════════════════════════════════════
-
+  // INCOMING MESSAGE HANDLER (always called on JavaFX thread)
     private void handleIncoming(Message msg) {
         switch (msg.getType()) {
 
@@ -373,10 +354,7 @@ public class ChatClient extends Application {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
     // USER ACTIONS
-    // ══════════════════════════════════════════════════════════════════════════
-
     private void createRoom() {
         String name = newRoomField.getText().trim();
         if (name.isEmpty()) return;
@@ -405,10 +383,8 @@ public class ChatClient extends Application {
         messageField.clear();
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
+ 
     // NETWORK HELPERS
-    // ══════════════════════════════════════════════════════════════════════════
-
     /** Thread-safe socket write. */
     public synchronized void sendMessage(Message msg) {
         try {
@@ -434,9 +410,7 @@ public class ChatClient extends Application {
         currentRoom = null;
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
     // UI HELPERS
-    // ══════════════════════════════════════════════════════════════════════════
 
     private void appendToChat(String text) {
         if (chatArea != null) {
@@ -486,7 +460,7 @@ public class ChatClient extends Application {
         return b;
     }
 
-    // ── Entry point ────────────────────────────────────────────────────────────
+    //Entry point
 
     public static void main(String[] args) {
         launch(args);
