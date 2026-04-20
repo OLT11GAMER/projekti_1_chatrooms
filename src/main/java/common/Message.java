@@ -13,7 +13,7 @@ public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Type {
-        // ── Client → Server ──────────────────────────────
+        //Client -> Server
         LOGIN,          // content = requested username
         CREATE_ROOM,    // roomName = desired room name
         JOIN_ROOM,      // roomName = target room
@@ -22,7 +22,7 @@ public class Message implements Serializable {
         LIST_ROOMS,
         DISCONNECT,
 
-        // ── Server → Client ──────────────────────────────
+        //Server -> Client
         LOGIN_SUCCESS,
         LOGIN_FAIL,
         ROOM_LIST,      // dataList = List<String> of room names
@@ -50,7 +50,7 @@ public class Message implements Serializable {
                 .format(DateTimeFormatter.ofPattern("HH:mm:ss"));
     }
 
-    // ── Getters ────────────────────────────────────────────────────────────────
+    // Getters
     public Type         getType()      { return type;      }
     public String       getSender()    { return sender;    }
     public String       getContent()   { return content;   }
