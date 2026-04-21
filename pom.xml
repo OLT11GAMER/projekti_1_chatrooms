@@ -29,7 +29,6 @@
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        <!-- Added graphics for better compatibility across OS -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
@@ -49,46 +48,40 @@
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
-                <!-- This configuration outside executions makes it the default for IDEs -->
+                <!--
+                    Default (used by IntelliJ "Maven" tool window → Plugins → javafx:run).
+                    To run the SERVER:  mvn javafx:run@server
+                    To run the CLIENT:  mvn javafx:run@client
+                         (or just:     mvn javafx:run   ← runs client by default)
+                -->
                 <configuration>
                     <mainClass>client.ChatClient</mainClass>
+                    <options>
+                        <option>--add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED</option>
+                    </options>
                 </configuration>
                 <executions>
                     <execution>
                         <id>server</id>
                         <configuration>
                             <mainClass>server.ChatServer</mainClass>
+                            <options>
+                                <option>--add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED</option>
+                            </options>
                         </configuration>
                     </execution>
                     <execution>
                         <id>client</id>
                         <configuration>
                             <mainClass>client.ChatClient</mainClass>
+                            <options>
+                                <option>--add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED</option>
+                            </options>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals><goal>shade</goal></goals>
-                        <configuration>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>fat</shadedClassifierName>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>server.ChatServer</mainClass>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
