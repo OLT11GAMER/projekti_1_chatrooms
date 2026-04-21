@@ -5,10 +5,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/**
- * Serializable message class shared between server and client.
- * Represents every packet exchanged over the socket connection.
- */
 public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
 

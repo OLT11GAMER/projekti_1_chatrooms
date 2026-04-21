@@ -16,21 +16,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.List;
 
-/**
- * Distributed Chat Client — JavaFX application.
- *
- * Thread model
- * ────────────
- * • Main JavaFX thread handles all UI interactions.
- * • A dedicated "receive" thread blocks on ObjectInputStream.readObject()
- *   and hands every incoming Message to Platform.runLater() for UI updates.
- * • sendMessage() is synchronized to prevent concurrent writes on the
- *   output stream from the JavaFX thread and (theoretically) any future
- *   background sender.
- *
- * No polling: the receive thread sits blocked on a blocking read, making
- * this a true push-based system.
- */
 public class ChatClient extends Application {
 
     // Network state
@@ -265,7 +250,7 @@ public class ChatClient extends Application {
                 usersLbl, usersListView);
         root.setLeft(leftPanel);
 
-        // ── Center: chat area ──────────────────────────────────────────────────
+        // Center: chat area
         VBox centerPanel = new VBox(6);
         centerPanel.setPadding(new Insets(10));
 
@@ -411,7 +396,6 @@ public class ChatClient extends Application {
     }
 
     // UI HELPERS
-
     private void appendToChat(String text) {
         if (chatArea != null) {
             chatArea.appendText(text + "\n");
@@ -461,7 +445,6 @@ public class ChatClient extends Application {
     }
 
     //Entry point
-
     public static void main(String[] args) {
         launch(args);
     }

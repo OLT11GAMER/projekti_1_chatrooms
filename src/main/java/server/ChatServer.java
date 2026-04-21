@@ -26,33 +26,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Distributed Chat Server — JavaFX application.
- *
- * Concurrency model
- * ─────────────────
- * • One CachedThreadPool handles all ClientHandler threads (one per client).
- * • A background accept-loop thread waits on ServerSocket.accept().
- * • Two ReentrantLocks protect the shared clients and rooms maps.
- * • All JavaFX UI updates go through Platform.runLater().
- */
 public class ChatServer extends Application {
 
-    // ── Shared state (protected by locks) ─────────────────────────────────────
-
+    // Shared state -protected by locks
     private final Map<String, ClientHandler> clients   = new HashMap<>();
     private final Map<String, ChatRoom>      rooms     = new HashMap<>();
     private final ReentrantLock              clientsLock = new ReentrantLock();
     private final ReentrantLock              roomsLock   = new ReentrantLock();
 
-    // ── Network ────────────────────────────────────────────────────────────────
-
+    // Network
     private ServerSocket    serverSocket;
     private ExecutorService threadPool;
     private volatile boolean running = false;
 
-    // ── JavaFX components ──────────────────────────────────────────────────────
-
+    // JavaFX components
     private TextArea              logArea;
     private ObservableList<String> clientsObs;
     private ObservableList<String> roomsObs;
@@ -60,13 +47,12 @@ public class ChatServer extends Application {
     private TextField              portField;
     private Label                  statusLabel;
 
-    // ── JavaFX lifecycle ───────────────────────────────────────────────────────
-
+    // JavaFX lifecycle
     @Override
     public void start(Stage stage) {
         stage.setTitle("Distributed Chat — Server");
 
-        // ── Top bar ────────────────────────────────────────────────────────────
+        // Top bar
         HBox topBar = new HBox(10);
         topBar.setPadding(new Insets(10, 14, 10, 14));
         topBar.setAlignment(Pos.CENTER_LEFT);
@@ -89,7 +75,7 @@ public class ChatServer extends Application {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         topBar.getChildren().addAll(portLbl, portField, startStopBtn, spacer, statusLabel);
 
-        // ── Left panel: clients & rooms lists ──────────────────────────────────
+        //Left panel: clients & rooms lists
         VBox leftPanel = new VBox(8);
         leftPanel.setPadding(new Insets(10));
         leftPanel.setPrefWidth(210);
@@ -109,7 +95,7 @@ public class ChatServer extends Application {
 
         leftPanel.getChildren().addAll(clientsLbl, clientsView, roomsLbl, roomsView);
 
-        // ── Center: server log ─────────────────────────────────────────────────
+        // Center: server log
         VBox centerPanel = new VBox(6);
         centerPanel.setPadding(new Insets(10));
 
@@ -125,7 +111,7 @@ public class ChatServer extends Application {
 
         centerPanel.getChildren().addAll(logLbl, logArea, clearBtn);
 
-        // ── Root layout ────────────────────────────────────────────────────────
+        // Root layout
         BorderPane root = new BorderPane();
         root.setTop(topBar);
         root.setLeft(leftPanel);
@@ -141,8 +127,7 @@ public class ChatServer extends Application {
         });
     }
 
-    // ── Server start / stop ────────────────────────────────────────────────────
-
+    // Server start / stop
     private void toggleServer() {
         if (running) stopServer();
         else         startServer();
@@ -220,9 +205,8 @@ public class ChatServer extends Application {
         log("Server stopped.");
     }
 
-    // ── Client registry (thread-safe) ─────────────────────────────────────────
-
-    /** Returns true if the username was free and has been registered. */
+    // Client registry (thread-safe)
+    // Returns true if the username was free and has been registered.
     public boolean registerClient(String username, ClientHandler handler) {
         clientsLock.lock();
         try {
@@ -246,9 +230,8 @@ public class ChatServer extends Application {
         }
     }
 
-    // ── Room registry (thread-safe) ────────────────────────────────────────────
-
-    /** Creates a new room and returns it, or null if the name is taken. */
+    // Room registry (thread-safe)
+    // Creates a new room and returns it, or null if the name is taken.
     public ChatRoom createRoom(String name) {
         roomsLock.lock();
         try {
@@ -279,7 +262,7 @@ public class ChatServer extends Application {
         }
     }
 
-    /** Rebuilds the rooms list view (member counts). Call after any join/leave. */
+    // Rebuilds the rooms list view (member counts). Call after any join/leave.
     public void refreshRoomsDisplay() {
         roomsLock.lock();
         try {
@@ -293,8 +276,7 @@ public class ChatServer extends Application {
         }
     }
 
-    // ── Logging ────────────────────────────────────────────────────────────────
-
+    // Logging
     public void log(String message) {
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         String line = "[" + time + "] " + message;
@@ -306,16 +288,14 @@ public class ChatServer extends Application {
         System.out.println(line);
     }
 
-    // ── Utility ────────────────────────────────────────────────────────────────
-
+    // Utility
     private Label styledLabel(String text) {
         Label lbl = new Label(text);
         lbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12;");
         return lbl;
     }
 
-    // ── Entry point ────────────────────────────────────────────────────────────
-
+    // Entry point
     public static void main(String[] args) {
         launch(args);
     }

@@ -9,20 +9,6 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
-
-/**
- * Represents a chat room.
- *
- * Key concurrency design
- * ──────────────────────
- * • A LinkedBlockingQueue<Message> buffers every incoming chat message.
- * • A single dedicated "dispatcher" thread (one per room) blocks on queue.take()
- *   and broadcasts each message to all current members.
- * • A ReentrantLock guards the members Set so that concurrent join / leave
- *   operations never corrupt the collection while broadcasting is in progress.
- *
- * This satisfies the project's BlockingQueue + synchronisation requirements.
- */
 public class ChatRoom {
 
     private final String                    name;
@@ -47,14 +33,14 @@ public class ChatRoom {
         this.dispatchThread.start();
     }
 
-    // ── Message dispatching ────────────────────────────────────────────────────
+    // Message dispatching
 
-    /** Producer side: any ClientHandler enqueues here (non-blocking). */
+    // Producer side: any ClientHandler enqueues here (non-blocking).
     public void enqueueMessage(Message msg) {
         messageQueue.offer(msg);
     }
 
-    /** Consumer side: runs on the room's dedicated dispatcher thread. */
+    // Consumer side: runs on the room's dedicated dispatcher thread.
     private void dispatchMessages() {
         while (running) {
             try {
@@ -68,7 +54,7 @@ public class ChatRoom {
         }
     }
 
-    /** Send a message to every member currently in this room. */
+    // Send a message to every member currently in this room.
     private void broadcast(Message msg) {
         membersLock.lock();
         try {
@@ -87,7 +73,7 @@ public class ChatRoom {
         }
     }
 
-    // ── Membership management ──────────────────────────────────────────────────
+    // Membership management
 
     public boolean addMember(ClientHandler client) {
         membersLock.lock();
@@ -129,8 +115,7 @@ public class ChatRoom {
         }
     }
 
-    // ── Lifecycle ──────────────────────────────────────────────────────────────
-
+    // Lifecycle
     public void shutdown() {
         running = false;
         dispatchThread.interrupt();

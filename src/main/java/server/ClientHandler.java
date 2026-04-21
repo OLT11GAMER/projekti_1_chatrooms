@@ -9,20 +9,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Handles one connected client on its own thread.
- *
- * Lifecycle
- * ─────────
- * 1. Performs login handshake (validates unique username).
- * 2. Enters the main receive loop, routing each Message to the correct handler.
- * 3. On disconnect / error, cleans up room membership and notifies the server.
- *
- * Thread safety
- * ─────────────
- * sendMessage() is synchronized so that the dispatcher thread and any server
- * notification can both write to the socket without interleaving bytes.
- */
 public class ClientHandler implements Runnable {
 
     private final Socket      socket;
@@ -39,13 +25,11 @@ public class ClientHandler implements Runnable {
         this.running = true;
     }
 
-    // ── Thread entry point ─────────────────────────────────────────────────────
+    // Thread entry point
 
     @Override
     public void run() {
         try {
-            // ObjectOutputStream must be created FIRST to avoid deadlock
-            // (both sides must flush their header before the other can read).
             out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
             in  = new ObjectInputStream(socket.getInputStream());
@@ -67,7 +51,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    // ── Login ──────────────────────────────────────────────────────────────────
+    //Login Part
 
     private boolean handleLogin() throws IOException, ClassNotFoundException {
         Message loginMsg = (Message) in.readObject();
@@ -95,7 +79,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    // ── Message routing ────────────────────────────────────────────────────────
+    // Message routing
 
     private void handleMessage(Message msg) {
         switch (msg.getType()) {
@@ -109,8 +93,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    // ── Room operations ────────────────────────────────────────────────────────
-
+    // Room operations
     private void handleCreateRoom(String roomName) {
         if (roomName == null || roomName.isBlank()) {
             sendMessage(new Message(Message.Type.ERROR, "Server",
@@ -204,7 +187,7 @@ public class ClientHandler implements Runnable {
         currentRoom = null;
     }
 
-    // ── Chat ───────────────────────────────────────────────────────────────────
+    // Chat
 
     private void handleChat(Message msg) {
         if (currentRoom == null) {
@@ -220,7 +203,7 @@ public class ClientHandler implements Runnable {
         currentRoom.enqueueMessage(broadcast);
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────────
+    //Helpers
 
     private void sendRoomList() {
         List<String> names = server.getRoomNames();
@@ -229,10 +212,6 @@ public class ClientHandler implements Runnable {
         sendMessage(msg);
     }
 
-    /**
-     * Thread-safe write to this client's socket.
-     * Called from: this thread (main loop) AND the room's dispatcher thread.
-     */
     public synchronized void sendMessage(Message msg) {
         try {
             out.writeObject(msg);
@@ -243,7 +222,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    // ── Disconnect ─────────────────────────────────────────────────────────────
+    //Disconnect
 
     private void disconnect() {
         running = false;
@@ -254,7 +233,7 @@ public class ClientHandler implements Runnable {
         if (username != null) server.log("Disconnected: " + username);
     }
 
-    // ── Accessors ──────────────────────────────────────────────────────────────
+    //Accessors
 
     public String   getUsername()    { return username;    }
     public ChatRoom getCurrentRoom() { return currentRoom; }
