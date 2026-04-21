@@ -63,6 +63,7 @@ public class ChatRoom {
                 try {
                     client.sendMessage(msg);
                 } catch (Exception e) {
+                    
                     // Remove clients whose socket is no longer writable.
                     dead.add(client);
                 }
@@ -74,7 +75,6 @@ public class ChatRoom {
     }
 
     // Membership management
-
     public boolean addMember(ClientHandler client) {
         membersLock.lock();
         try {
