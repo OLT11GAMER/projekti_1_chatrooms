@@ -3,9 +3,9 @@
 
 ---
 
-## Udhëzime për ekzekutim
+## Udhezimet per ekzekutim
 
-### Kërkesat paraprake
+### Kerkesat paraprake
 | Mjeti | Versioni minimal |
 |-------|-----------------|
 | JDK   | 17              |
@@ -21,25 +21,25 @@ mvn clean package -q
 ```bash
 java -cp target/distributed-chat-1.0-SNAPSHOT-server.jar server.ChatServer
 ```
-Serveri starton në **port 5000** dhe krijon automatikisht room-in `General`.  
-Për port të ndryshëm:
+Serveri starton ne **port 5000** dhe krijon automatikisht room-in `General`.  
+Per port te ndryshem:
 ```bash
 java -cp target/distributed-chat-1.0-SNAPSHOT-server.jar server.ChatServer 6000
 ```
 
-### Hapi 3 – Nisja e Klientëve (minimum 3)
+### Hapi 3 – Nisja e Klienteve (minimum 3)
 ```bash
 mvn javafx:run
 ```
-Çdo klient hap dritaren e login-it. Fut `localhost`, `5000`, dhe një username unik, pastaj kliko **Connect**.
+Cdo klient hap dritaren e login-it. Fut `localhost`, `5000`, dhe nje username unik, pastaj kliko **Connect**.
 
-> **Testimi me 3 klientë:** Hap 3 terminale të ndara dhe ekzekuto `mvn javafx:run` në secilin.
+> **Testimi me 3 kliente:** Hap 3 terminale të ndara dhe ekzekuto `mvn javafx:run` ne secilin.
 
 ---
 
-## Përshkrim i arkitekturës
+## Pershkrim i arkitektures
 
-### Pamje e përgjithshme
+### Pamje e pergjithshme
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -64,9 +64,9 @@ mvn javafx:run
 ┌────────────────────────────────────────────────────────────────┐
 │                        CHAT CLIENT                             │
 │                                                                │
-│  JavaFX Application Thread  ── tërë UI-ja                      │
+│  JavaFX Application Thread  ── UI                      │
 │  ReceiverThread              ── bllokon mbi ObjectInputStream   │
-│                                 Platform.runLater() për UI     │
+│                                 Platform.runLater() per UI     │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -83,54 +83,54 @@ Klienti          ClientHandler        BlockingQueue      DispatcherThread     An
 
 ### Klasat kryesore
 
-| Klasa | Paketa | Roli |
-|-------|--------|------|
-| `ChatServer` | `server` | ServerSocket + ThreadPool + regjistri i klientëve |
-| `ClientHandler` | `server` | Menaxhon një klient në thread të veçantë (Runnable) |
-| `ChatRoom` | `server` | BlockingQueue + DispatcherThread + lista e anëtarëve |
-| `RoomManager` | `server` | Regjistri i të gjitha room-eve (ConcurrentHashMap) |
+| Klasa | Paketa | Roli                                                 |
+|-------|--------|------------------------------------------------------|
+| `ChatServer` | `server` | ServerSocket + ThreadPool + regjistri i klienteve    |
+| `ClientHandler` | `server` | Menaxhon nje klient ne thread te vecante (Runnable)  |
+| `ChatRoom` | `server` | BlockingQueue + DispatcherThread + lista e anetareve |
+| `RoomManager` | `server` | Regjistri i te gjitha room-eve (ConcurrentHashMap)   |
 | `Packet` | `shared` | Mesazhi serializable i protokollit (Builder pattern) |
-| `CommandType` | `shared` | Enum me të gjitha komandat e protokollit |
-| `ChatClientApp` | `client` | JavaFX GUI + ReceiverThread |
+| `CommandType` | `shared` | Enum me te gjitha komandat e protokollit             |
+| `ChatClientApp` | `client` | JavaFX GUI + ReceiverThread                          |
 
 ---
 
-## Kërkesat teknike – si janë plotësuar
+## Kerkesat teknike – si jane plotësuar
 
 ### 1. Multithreading
-- `ChatServer` përdor `ExecutorService` (`CachedThreadPool`) — çdo klient merr thread-in e vet
-- `ChatRoom` ka `DispatcherThread` të dedikuar për çdo room
-- Klienti ka `ReceiverThread` të veçantë për marrjen e mesazheve pa bllokuar UI-në
+- `ChatServer` perdore `ExecutorService` (`CachedThreadPool`) — ku cdo klient e merr thread-in e vet
+- `ChatRoom` ka `DispatcherThread` te dedikuar per cdo room
+- Klienti ka `ReceiverThread` te vecante per marrjen e mesazheve pa bllokuar UI
 
 ### 2. BlockingQueue
 - `ChatRoom` përdor `LinkedBlockingQueue<Packet>`
-- `ClientHandler.handleSendMessage()` → `enqueueMessage()` → fut në queue
-- `DispatcherThread.dispatchLoop()` → `queue.take()` bllokon pa harxhuar CPU, zgjohet vetëm kur vjen mesazh
-- Kjo është **push-based system** — nuk ka polling
+- `ClientHandler.handleSendMessage()` → `enqueueMessage()` → fut ne queue
+- `DispatcherThread.dispatchLoop()` → `queue.take()` bllokon pa harxhuar CPU, zgjohet vetem kur vjen mesazh
+-  **push-based system** — nuk ka polling
 
 ### 3. Sinkronizimi
-| Struktura | Mbrojtja |
-|-----------|---------|
-| `connectedClients` (Map në ChatServer) | `ReentrantLock` — `clientsLock` |
-| `members` (Set në ChatRoom) | `ReentrantLock` — `membersLock` |
-| Room map (RoomManager) | `ConcurrentHashMap` — thread-safe pa lock shtesë |
-| `ObjectOutputStream` (ClientHandler) | `synchronized` në `sendPacket()` |
+| Struktura                              | Mbrojtja                                         |
+|----------------------------------------|--------------------------------------------------|
+| `connectedClients` (Map ne ChatServer) | `ReentrantLock` — `clientsLock`                  |
+| `members` (Set ne ChatRoom)            | `ReentrantLock` — `membersLock`                  |
+| Room map (RoomManager)                 | `ConcurrentHashMap` — thread-safe pa lock shtese |
+| `ObjectOutputStream` (ClientHandler)   | `synchronized` ne `sendPacket()`                 |
 
-**Snapshot pattern** — brenda `broadcast()`, lista e anëtarëve kopjohet nën lock, pastaj lock-u lirohet **para** I/O. Kjo parandalon bllokim të gjatë dhe `ConcurrentModificationException`.
+**Snapshot pattern** — brenda `broadcast()`, lista e anetarëve kopjohet nen lock, pastaj lock-u lirohet **para** I/O. Kjo parandalon bllokim te gjate dhe `ConcurrentModificationException`.
 
 ### 4. Programimi në rrjet
-- `ServerSocket` në `ChatServer.start()`
-- `Socket` për çdo klient të lidhur
-- `ObjectOutputStream` / `ObjectInputStream` për serializim të `Packet`-ave
+- `ServerSocket` ne `ChatServer.start()`
+- `Socket` per cdo klient te lidhur
+- `ObjectOutputStream` / `ObjectInputStream` per serializim te `Packet`-ave
 
 ### 5. Protokolli i komunikimit
-Çdo mesazh është objekt `Packet implements Serializable` me fushat:
-- `CommandType type` — lloji i komandës
-- `String sender` — dërguesi
+Cdo mesazh eshte objekt `Packet implements Serializable` me fushat:
+- `CommandType type` — lloji i komandes
+- `String sender` — derguesi
 - `String roomName` — room-i
-- `String content` — përmbajtja
-- `LocalDateTime timestamp` — ora e dërgimit (vendoset automatikisht)
-- `List<String> data` — payload për lista (rooms, users)
+- `String content` — permbajtja
+- `LocalDateTime timestamp` — ora e dergimit (vendoset automatikisht)
+- `List<String> data` — payload per lista (rooms, users)
 
 ---
 
@@ -156,9 +156,9 @@ Klienti          ClientHandler        BlockingQueue      DispatcherThread     An
 
 ## Lista e testimit
 
-- [x] 3+ klientë të lidhur njëkohësisht
-- [x] Username i dyfishtë refuzohet me mesazh gabimi
-- [x] Mesazhet shpërndahen vetëm tek anëtarët e room-it
+- [x] 3+ kliente te lidhur njekohesisht
+- [x] Username i dyfishte refuzohet me mesazh gabimi
+- [x] Mesazhet shperndahen vetëm tek anetaret e room-it
 - [x] Njoftime join/leave dërgohen në kohë reale (push-based)
 - [x] Shkëputja e klientit e largon nga room dhe nga mapa
 - [x] Nuk humbet asnjë mesazh nën ngarkesë paralele
