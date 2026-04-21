@@ -133,7 +133,6 @@ public class ChatClient extends Application {
         loginStatus.setStyle("-fx-text-fill: #2980B9;");
         loginStatus.setText("Connecting…");
 
-        // Network I/O on a background thread — never on the JavaFX thread.
         new Thread(() -> {
             try {
                 socket = new Socket(host, port);
@@ -142,22 +141,23 @@ public class ChatClient extends Application {
                 out.flush();
                 in  = new ObjectInputStream(socket.getInputStream());
 
-                // Send login request
-                sendMessage(new Message(Message.Type.LOGIN, user, user, null));
+                // ✅ Write LOGIN directly — don't use sendMessage() here because
+                //    sendMessage() checks 'connected', which is still false at this point.
+                out.writeObject(new Message(Message.Type.LOGIN, user, user, null));
+                out.flush();
+                out.reset();
 
-                // Wait for server response
                 Message response = (Message) in.readObject();
 
                 if (response.getType() == Message.Type.LOGIN_SUCCESS) {
                     username  = user;
-                    connected = true;
+                    connected = true;   // ← only set true AFTER confirmed by server
                     Platform.runLater(() -> {
                         showChatScene();
                         appendToChat("✓ " + response.getContent());
                     });
                     startReceiving();
                 } else {
-                    // LOGIN_FAIL
                     Platform.runLater(() -> {
                         setLoginError(response.getContent());
                         connectButton.setDisable(false);
@@ -172,7 +172,6 @@ public class ChatClient extends Application {
             }
         }, "Connect-Thread").start();
     }
-
     // Chat Part
     private void showChatScene() {
         primaryStage.setTitle("Chat — " + username);
