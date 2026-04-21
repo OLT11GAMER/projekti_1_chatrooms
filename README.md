@@ -33,7 +33,7 @@ mvn javafx:run
 ```
 Cdo klient hap dritaren e login-it. Fut `localhost`, `5000`, dhe nje username unik, pastaj kliko **Connect**.
 
-> **Testimi me 3 kliente:** Hap 3 terminale të ndara dhe ekzekuto `mvn javafx:run` ne secilin.
+> **Testimi me 3 kliente:** Hap 3 terminale te ndara dhe ekzekuto `mvn javafx:run` ne secilin.
 
 ---
 
@@ -55,7 +55,7 @@ Cdo klient hap dritaren e login-it. Fut `localhost`, `5000`, dhe nje username un
 │           │     ├── LinkedBlockingQueue<Packet>                │
 │           │     ├── DispatcherThread  (take → broadcast)       │
 │           │     └── Set<ClientHandler>  (ReentrantLock)        │
-│           └── ChatRoom "Random"  (strukturë identike)          │
+│           └── ChatRoom "Random"  (strukture identike)          │
 │                                                                │
 │  connectedClients Map  (ReentrantLock)                         │
 └────────────────────────────────────────────────────────────────┘
@@ -72,7 +72,7 @@ Cdo klient hap dritaren e login-it. Fut `localhost`, `5000`, dhe nje username un
 
 ### Rrjedha e mesazhit (Message Flow)
 ```
-Klienti          ClientHandler        BlockingQueue      DispatcherThread     Anëtarët
+Klienti          ClientHandler        BlockingQueue      DispatcherThread     Anetaret
    │                   │                    │                   │                │
    │── SEND_MESSAGE ──►│                    │                   │                │
    │                   │── enqueue() ──────►│                   │                │
@@ -95,7 +95,7 @@ Klienti          ClientHandler        BlockingQueue      DispatcherThread     An
 
 ---
 
-## Kerkesat teknike – si jane plotësuar
+## Kerkesat teknike – si jane plotesuar
 
 ### 1. Multithreading
 - `ChatServer` perdore `ExecutorService` (`CachedThreadPool`) — ku cdo klient e merr thread-in e vet
@@ -103,7 +103,7 @@ Klienti          ClientHandler        BlockingQueue      DispatcherThread     An
 - Klienti ka `ReceiverThread` te vecante per marrjen e mesazheve pa bllokuar UI
 
 ### 2. BlockingQueue
-- `ChatRoom` përdor `LinkedBlockingQueue<Packet>`
+- `ChatRoom` perdor `LinkedBlockingQueue<Packet>`
 - `ClientHandler.handleSendMessage()` → `enqueueMessage()` → fut ne queue
 - `DispatcherThread.dispatchLoop()` → `queue.take()` bllokon pa harxhuar CPU, zgjohet vetem kur vjen mesazh
 -  **push-based system** — nuk ka polling
@@ -116,9 +116,9 @@ Klienti          ClientHandler        BlockingQueue      DispatcherThread     An
 | Room map (RoomManager)                 | `ConcurrentHashMap` — thread-safe pa lock shtese |
 | `ObjectOutputStream` (ClientHandler)   | `synchronized` ne `sendPacket()`                 |
 
-**Snapshot pattern** — brenda `broadcast()`, lista e anetarëve kopjohet nen lock, pastaj lock-u lirohet **para** I/O. Kjo parandalon bllokim te gjate dhe `ConcurrentModificationException`.
+**Snapshot pattern** — brenda `broadcast()`, lista e anetareve kopjohet nen lock, pastaj lock-u lirohet **para** I/O. Kjo parandalon bllokim te gjate dhe `ConcurrentModificationException`.
 
-### 4. Programimi në rrjet
+### 4. Programimi ne rrjet
 - `ServerSocket` ne `ChatServer.start()`
 - `Socket` per cdo klient te lidhur
 - `ObjectOutputStream` / `ObjectInputStream` per serializim te `Packet`-ave
@@ -137,20 +137,20 @@ Cdo mesazh eshte objekt `Packet implements Serializable` me fushat:
 ## Problemet e hasura dhe zgjidhjet
 
 ### Problemi 1 – Deadlock me ObjectOutputStream
-**Problemi:** Të dy anët ndërtuan `ObjectInputStream` para `ObjectOutputStream`, duke shkaktuar bllok të ndërsjellë (secila priste header-in e streamit të tjetrës).  
-**Zgjidhja:** Gjithmonë ndërtoje `ObjectOutputStream` së pari dhe thirre `flush()`, pastaj `ObjectInputStream`.
+**Problemi:** Te dy anet ndertuan `ObjectInputStream` para `ObjectOutputStream`, duke shkaktuar bllok te ndersjelle (secila priste header-in e streamit te tjetres).  
+**Zgjidhja:** Gjithmone ndertoje `ObjectOutputStream` se pari dhe thirre `flush()`, pastaj `ObjectInputStream`.
 
-### Problemi 2 – Cache i vjetër i serializimit
-**Problemi:** Objekte të modifikuara dhe të dërguara shumë herë shfaqeshin me vlerat e vjetra sepse `ObjectOutputStream` ruan cache të referencave.  
+### Problemi 2 – Cache i vjeter i serializimit
+**Problemi:** Objekte te modifikuara dhe te derguara shume here shfaqeshin me vlerat e vjetra sepse `ObjectOutputStream` ruan cache te referencave.  
 **Zgjidhja:** Thirre `out.reset()` pas çdo `writeObject()`.
 
-### Problemi 3 – Race condition gjatë broadcast
-**Problemi:** Iterimi i `members` set ndërkohë që një thread tjetër thirri `removeMember()` shkaktonte `ConcurrentModificationException`.  
-**Zgjidhja:** Merr snapshot të listës brenda lock-ut, pastaj bëj broadcast jashtë lock-ut (I/O nuk mban lock).
+### Problemi 3 – Race condition gjate broadcast
+**Problemi:** Iterimi i `members` set nderkohe qe nje thread tjeter thirri `removeMember()` shkaktonte `ConcurrentModificationException`.  
+**Zgjidhja:** Merr snapshot te listes brenda lock-ut, pastaj bej broadcast jashte lock-ut (I/O nuk mban lock).
 
-### Problemi 4 – Përditësimi i UI nga thread tjetër
-**Problemi:** `ReceiverThread` provoi të azhornonte `ListView` drejtpërdrejt → `IllegalStateException` ("Not on FX application thread").  
-**Zgjidhja:** Çdo ndryshim i UI mbështillet me `Platform.runLater()`.
+### Problemi 4 – Perditesimi i UI nga thread tjeter
+**Problemi:** `ReceiverThread` provoi te azhornonte `ListView` drejtperdrejte → `IllegalStateException` ("Not on FX application thread").  
+**Zgjidhja:** Cdo ndryshim i UI mbeshtillet me `Platform.runLater()`.
 
 ---
 
@@ -158,10 +158,10 @@ Cdo mesazh eshte objekt `Packet implements Serializable` me fushat:
 
 - [x] 3+ kliente te lidhur njekohesisht
 - [x] Username i dyfishte refuzohet me mesazh gabimi
-- [x] Mesazhet shperndahen vetëm tek anetaret e room-it
-- [x] Njoftime join/leave dërgohen në kohë reale (push-based)
-- [x] Shkëputja e klientit e largon nga room dhe nga mapa
-- [x] Nuk humbet asnjë mesazh nën ngarkesë paralele
+- [x] Mesazhet shperndahen vetem tek anetaret e room-it
+- [x] Njoftime join/leave dergohen ne kohe reale (push-based)
+- [x] Shkeputja e klientit e largon nga room dhe nga map
+- [x] Nuk humbet asnje mesazh nen ngarkese paralele
 
 ---
 
