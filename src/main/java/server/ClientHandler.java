@@ -33,7 +33,6 @@ public class ClientHandler implements Runnable {
             out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
             in  = new ObjectInputStream(socket.getInputStream());
-
             if (!handleLogin()) return;
 
             while (running) {
