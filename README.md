@@ -31,7 +31,7 @@ java -cp target/distributed-chat-1.0-SNAPSHOT-server.jar server.ChatServer 6000
 ```bash
 mvn javafx:run
 ```
-Cdo klient hap dritaren e login-it. Fut `localhost`, `5000`, dhe nje username unik, pastaj kliko **Connect**.
+Cdo klient hap dritaren e login-it. Fut `localhost`, `12345`, dhe nje username unik, pastaj kliko **Connect**.
 
 > **Testimi me 3 kliente:** Hap 3 terminale te ndara dhe ekzekuto `mvn javafx:run` ne secilin.
 
